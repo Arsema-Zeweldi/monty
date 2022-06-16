@@ -1,13 +1,14 @@
-#ifndef MONTY_H_
-#define MONTY_H_
+#ifndef MONTY_H
+#define MONTY_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
-#include <stdarg.h>
+#include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
+#include <stdarg.h>
+
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
  * @n: integer
@@ -40,7 +41,16 @@ typedef struct instruction_s
 
 extern stack_t *head;
 typedef void (*op_func)(stack_t **, unsigned int);
-/*monty.c*/
+int len_chars(FILE *);
+
+/*utils*/
+void open_fd(char *file_name);
+void read_fd(FILE *);
+int parse_line(char *buffer, int line_number, int format);
+void find_func(char *, char *, int, int);
+void call_fun(op_func, char *, char *, int, int);
+
+/*main*/
 stack_t *create_node(int n);
 void free_nodes(void);
 void add_to_queue(stack_t **, unsigned int);
@@ -50,19 +60,23 @@ void push_op(stack_t **, unsigned int);
 void pall_op(stack_t **, unsigned int);
 void pint_op(stack_t **, unsigned int);
 void pop_op(stack_t **, unsigned int);
-void swap_op(stack_t **, unsigned int);
 void nop_op(stack_t **, unsigned int);
+void swap_op(stack_t **, unsigned int);
 
-/*errors*/
+/*andvanced*/
+void add_op(stack_t **, unsigned int);
+void sub_op(stack_t **, unsigned int);
+void div_op(stack_t **, unsigned int);
+void mul_op(stack_t **, unsigned int);
+void mod_op(stack_t **, unsigned int);
+void print_char(stack_t **, unsigned int);
+void print_str(stack_t **, unsigned int);
+void rotl(stack_t **, unsigned int);
+void rotr(stack_t **, unsigned int);
+
+/*Error*/
 void monty_error(int error_code, ...);
+void monty_error2(int error_code, ...);
 void string_error(int error_code, ...);
-
-/*utils*/
-void open(char *file);
-void read_(FILE *);
-int parse_line(char *buffer, int line_number, int format);
-int len_chars(FILE *);
-void find_func(char *, char *, int, int);
-void call_fun(op_func, char*, char*, int, int);
 
 #endif

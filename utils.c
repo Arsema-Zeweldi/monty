@@ -1,50 +1,57 @@
 #include "monty.h"
 
 /**
- * open - opens a file
- * @file: file to open
+ * open_fd - opens a file
+ * @file_name: the file namepath
  * Return: void
  */
-void open(char *file)
+
+void open_fd(char *file_name)
 {
-	FILE *n = fopen(file, "r");
+	FILE *fd = fopen(file_name, "r");
 
-	if (file == NULL || n == NULL)
-		monty_error(2, file);
+	if (file_name == NULL || fd == NULL)
+		monty_error(2, file_name);
 
-	read_(n);
-	fclose(n);
+	read_fd(fd);
+	fclose(fd);
 }
 
+
 /**
- * read - reads a file
- * @n: pointer to file
+ * read_fd - reads a file
+ * @fd: pointer to file descriptor
  * Return: void
  */
-void read_(FILE *n)
+
+void read_fd(FILE *fd)
 {
 	int line_number, format = 0;
 	char *buffer = NULL;
 	size_t len = 0;
 
-	for (line_number = 1; getline(&buffer, &len, n) != -1; line_number++)
+	for (line_number = 1; getline(&buffer, &len, fd) != -1; line_number++)
 	{
 		format = parse_line(buffer, line_number, format);
 	}
 	free(buffer);
 }
 
+
 /**
- * parse_line - separates lines
- * @buffer: line
+ * parse_line - Separates each line into tokens to determine
+ * which function to call
+ * @buffer: line from the file
  * @line_number: line number
- * @format: storage format
- * Return: int
+ * @format:  storage format. If 0 Nodes will be entered as a stack.
+ * if 1 nodes will be entered as a queue.
+ * Return: Returns 0 if the opcode is stack. 1 if queue.
  */
+
 int parse_line(char *buffer, int line_number, int format)
 {
 	char *opcode, *value;
-	const char *delim = "\n";
+	const char *delim = "\n ";
 
 	if (buffer == NULL)
 		monty_error(4);
@@ -64,77 +71,90 @@ int parse_line(char *buffer, int line_number, int format)
 }
 
 /**
- * find_func - finds functions
+ * find_func - find the appropriate function for the opcode
  * @opcode: opcode
- * @value: argument
- * @format: storage format
- * @line_number: line number
+ * @value: argument of opcode
+ * @format:  storage format. If 0 Nodes will be entered as a stack.
+ * @ln: line number
+ * if 1 nodes will be entered as a queue.
  * Return: void
  */
-void find_func(char *opcode, char *value, int line_number, int format)
+void find_func(char *opcode, char *value, int ln, int format)
 {
-	int c;
-	int d;
+	int i;
+	int flag;
 
 	instruction_t func_list[] = {
 		{"push", push_op},
 		{"pall", pall_op},
 		{"pint", pint_op},
 		{"pop", pop_op},
+		{"nop", nop_op},
+		{"swap", swap_op},
+		{"add", add_op},
+		{"sub", sub_op},
+		{"div", div_op},
+		{"mul", mul_op},
+		{"mod", mod_op},
+		{"pchar", print_char},
+		{"pstr", print_str},
+		{"rotl", rotl},
+		{"rotr", rotr},
 		{NULL, NULL}
 	};
 
 	if (opcode[0] == '#')
 		return;
 
-	for (d = 1, c = 0; func_list[c].opcode != NULL; c++)
+	for (flag = 1, i = 0; func_list[i].opcode != NULL; i++)
 	{
-		if (strcmp(opcode, func_list[c].opcode) == 0)
+		if (strcmp(opcode, func_list[i].opcode) == 0)
 		{
-			call_fun(func_list[c].f, opcode, value, line_number, format);
-			d = 0;
+			call_fun(func_list[i].f, opcode, value, ln, format);
+			flag = 0;
 		}
 	}
-	if (d == 1)
-		monty_error(3, line_number, opcode);
+	if (flag == 1)
+		monty_error(3, ln, opcode);
 }
 
+
 /**
- * call_fun - calls the functions
- * @func: pointer to function
- * @op: opcode
- * @value: value
- * @line_number: line number
- * @format: storage format
- * Return: void
+ * call_fun - Calls the required function.
+ * @func: Pointer to the function that is about to be called.
+ * @op: string representing the opcode.
+ * @val: string representing a numeric value.
+ * @ln: line numeber for the instruction.
+ * @format: Format specifier. If 0 Nodes will be entered as a stack.
+ * if 1 nodes will be entered as a queue.
  */
-void call_fun(op_func func, char *op, char *value, int line_number, int format)
+void call_fun(op_func func, char *op, char *val, int ln, int format)
 {
 	stack_t *node;
-	int d;
-	int c;
+	int flag;
+	int i;
 
-	d = 1;
+	flag = 1;
 	if (strcmp(op, "push") == 0)
 	{
-		if (value != NULL && value[0] == '-')
+		if (val != NULL && val[0] == '-')
 		{
-			value = value + 1;
-			d = -1;
+			val = val + 1;
+			flag = -1;
 		}
-		if (value == NULL)
-			monty_error(5, line_number);
-		for (c = 0; value[c] != '\0'; c++)
+		if (val == NULL)
+			monty_error(5, ln);
+		for (i = 0; val[i] != '\0'; i++)
 		{
-			if (isdigit(value[c]) == 0)
-				monty_error(5, line_number);
+			if (isdigit(val[i]) == 0)
+				monty_error(5, ln);
 		}
-		node = create_node(atoi(value) *d);
+		node = create_node(atoi(val) * flag);
 		if (format == 0)
-			func(&node, line_number);
+			func(&node, ln);
 		if (format == 1)
-			add_to_queue(&node, line_number);
+			add_to_queue(&node, ln);
 	}
 	else
-		func(&head, line_number);
+		func(&head, ln);
 }

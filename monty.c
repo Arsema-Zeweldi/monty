@@ -2,10 +2,10 @@
 stack_t *head = NULL;
 
 /**
- * main - main func
- * @argc: no. of arguments
+ * main - entry point
+ * @argc: arguments count
  * @argv: list of arguments
- * Return: int
+ * Return: always 0
  */
 
 int main(int argc, char *argv[])
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "USAGE: monty file\n");
 		exit(EXIT_FAILURE);
 	}
-	open(argv[1]);
+	open_fd(argv[1]);
 	free_nodes();
 	return (0);
 }
@@ -40,20 +40,19 @@ stack_t *create_node(int n)
 
 /**
  * free_nodes - Frees nodes in the stack.
- * Return: void
  */
 void free_nodes(void)
 {
-	stack_t *tmp;
+	stack_t *new;
 
 	if (head == NULL)
 		return;
 
 	while (head != NULL)
 	{
-		tmp = head;
+		new = head;
 		head = head->next;
-		free(tmp);
+		free(new);
 	}
 }
 
@@ -63,22 +62,22 @@ void free_nodes(void)
  * @new_node: Pointer to the new node.
  * @ln: line number of the opcode.
  */
-void add_to_queue(stack_t **new_node, __attribute__((unused))unsigned int line_number)
+void add_to_queue(stack_t **stack, __attribute__((unused))unsigned int ln)
 {
-	stack_t *tmp;
+	stack_t *new;
 
-	if (new_node == NULL || *new_node == NULL)
+	if (stack == NULL || *stack == NULL)
 		exit(EXIT_FAILURE);
 	if (head == NULL)
 	{
-		head = *new_node;
+		head = *stack;
 		return;
 	}
-	tmp = head;
-	while (tmp->next != NULL)
-		tmp = tmp->next;
+	new = head;
+	while (new->next != NULL)
+		new = new->next;
 
-	tmp->next = *new_node;
-	(*new_node)->prev = tmp;
+	new->next = *stack;
+	(*stack)->prev = new;
 
 }
